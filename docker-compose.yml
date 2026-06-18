@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: clima_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_MULTIPLE_DATABASES: "clima_auth,clima_resource"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    networks:
+      - clima-network
+
+  # Mensageria com Redis (Pub/Sub)
+  redis:
+    image: redis:7-alpine
+    container_name: clima_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - clima-network
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  clima-network:
+    driver: bridge
