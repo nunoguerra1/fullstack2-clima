@@ -6,7 +6,7 @@ export class Weather {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ unique: true })
+    @Column()
     city!: string;
 
     @Column("float")
@@ -20,6 +20,9 @@ export class Weather {
 
     @Column()
     weatherCode!: number;
+
+    @Column({ nullable: true })
+    ownerId!: number;
 
     @OneToMany(() => Forecast, (forecast) => forecast.weather, { cascade: true, eager: true })
     forecast!: Forecast[];
