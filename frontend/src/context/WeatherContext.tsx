@@ -137,55 +137,46 @@ export const WeatherProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const createWeather = async (payload: any) => {
-        try {
-            const res = await fetch('http://localhost:3002/weather', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${state.token}`
-                },
-                body: JSON.stringify(payload)
-            });
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || "Erro ao cadastrar clima.");
-            }
-        } catch (err: any) {
-            alert(err.message);
+        const res = await fetch('http://localhost:3002/weather', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Erro ao cadastrar clima.");
         }
     };
 
     const updateWeather = async (id: number, temperature: number, windSpeed: number) => {
-        try {
-            const res = await fetch(`http://localhost:3002/weather/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${state.token}`
-                },
-                body: JSON.stringify({ temperature, windSpeed })
-            });
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || "Erro ao atualizar.");
-            }
-        } catch (err: any) {
-            alert(err.message);
+        const res = await fetch(`http://localhost:3002/weather/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify({ temperature, windSpeed })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Erro ao atualizar.");
         }
     };
 
     const deleteWeather = async (id: number) => {
-        try {
-            const res = await fetch(`http://localhost:3002/weather/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${state.token}` }
-            });
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || "Erro ao excluir.");
-            }
-        } catch (err: any) {
-            alert(err.message);
+        const res = await fetch(`http://localhost:3002/weather/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${state.token}` }
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || "Erro ao excluir.");
         }
     };
 
