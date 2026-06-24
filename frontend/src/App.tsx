@@ -14,7 +14,7 @@ import {
   SignOut,
   Lock,
   User as UserIcon,
-  CircleNotch,
+  CircleNotch
 } from '@phosphor-icons/react';
 import { WeatherContext } from './context/WeatherContext';
 
@@ -31,13 +31,13 @@ function AnimatedBackground() {
 
   if (data) {
     if (data.weatherCode >= 51 && data.weatherCode <= 67) {
-      color1 = "bg-gray-400"; color2 = "bg-blue-500";
+      color1 = "bg-slate-400"; color2 = "bg-blue-500";
     } else if (data.weatherCode >= 1 && data.weatherCode <= 3) {
       color1 = "bg-gray-300"; color2 = "bg-gray-400";
     } else if (!data.isDay) {
-      color1 = "bg-indigo-900"; color2 = "bg-purple-900";
+      color1 = "bg-indigo-950"; color2 = "bg-purple-900";
     } else {
-      color1 = "bg-yellow-300"; color2 = "bg-orange-300";
+      color1 = "bg-amber-300"; color2 = "bg-orange-300";
     }
   }
 
@@ -58,13 +58,15 @@ function AnimatedBackground() {
 }
 
 export default function App() {
-  const { user, login, logout, allCities, data, error, loading, searchWeather, createWeather, updateWeather, deleteWeather } = useContext(WeatherContext);
+  const { user, login, logout, allCities, data, loading, searchWeather, createWeather, updateWeather, deleteWeather } = useContext(WeatherContext);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [searchCity, setSearchCity] = useState('');
+
   const [newCity, setNewCity] = useState('');
   const [newTemp, setNewTemp] = useState('');
+  const [newCondition, setNewCondition] = useState('sunny');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; city: string } | null>(null);
@@ -108,15 +110,28 @@ export default function App() {
     }
     setIsSubmitting(true);
 
+    let weatherCode = 0;
+    let isDay = true;
+
+    if (newCondition === 'cloudy') {
+      weatherCode = 3;
+    } else if (newCondition === 'rainy') {
+      weatherCode = 61;
+    } else if (newCondition === 'night') {
+      weatherCode = 0;
+      isDay = false;
+    }
+
     const createPromise = createWeather({
       city: newCity,
       temperature: Number(newTemp),
-      windSpeed: 12.4,
-      isDay: true,
-      weatherCode: 0,
+      windSpeed: 14.2,
+      isDay,
+      weatherCode,
       forecast: [
-        { date: "2026-06-21", maxTemp: Number(newTemp) + 2, minTemp: Number(newTemp) - 2, weatherCode: 0 },
-        { date: "2026-06-22", maxTemp: Number(newTemp) + 4, minTemp: Number(newTemp) - 1, weatherCode: 1 }
+        { date: "2026-06-25", maxTemp: Number(newTemp) + 2, minTemp: Number(newTemp) - 2, weatherCode },
+        { date: "2026-06-26", maxTemp: Number(newTemp) + 4, minTemp: Number(newTemp) - 1, weatherCode },
+        { date: "2026-06-27", maxTemp: Number(newTemp) + 1, minTemp: Number(newTemp) - 3, weatherCode }
       ]
     });
 
@@ -126,13 +141,17 @@ export default function App() {
       error: (err) => err.message
     });
 
-    try { await createPromise; setNewCity(''); setNewTemp(''); } catch (e) { }
+    try {
+      await createPromise;
+      setNewCity('');
+      setNewTemp('');
+      setNewCondition('sunny');
+    } catch (e) { }
     setIsSubmitting(false);
   };
 
   const handleUpdateTemp = async (id: number, currentTemp: number, wind: number) => {
     const updatePromise = updateWeather(id, currentTemp + 1, wind);
-
     toast.promise(updatePromise, {
       loading: 'Atualizando temperatura...',
       success: 'Temperatura elevada em +1°C!',
@@ -150,12 +169,8 @@ export default function App() {
       error: (err) => err.message
     });
 
-    try {
-      await deletePromise;
-      setDeleteTarget(null);
-    } catch (e) {
-      setDeleteTarget(null);
-    }
+    try { await deletePromise; } catch (e) { }
+    setDeleteTarget(null);
   };
 
   if (!user) {
@@ -299,7 +314,20 @@ export default function App() {
                   placeholder="25" className="w-full p-2.5 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-amber-400"
                 />
               </div>
-              <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition-colors mt-1 shadow-sm">
+              <div>
+                <label className="block text-gray-500 mb-1 font-semibold">Condição do Tempo</label>
+                <select
+                  value={newCondition}
+                  onChange={e => setNewCondition(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-amber-400 text-gray-700 font-medium"
+                >
+                  <option value="sunny">☀️ Ensolarado / Dia</option>
+                  <option value="cloudy">☁️ Nublado</option>
+                  <option value="rainy">🌧️ Chuvoso</option>
+                  <option value="night">🌙 Noite Estrelada</option>
+                </select>
+              </div>
+              <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition-colors mt-2 shadow-sm">
                 Cadastrar Cidade
               </button>
             </form>
@@ -363,9 +391,9 @@ export default function App() {
                         <CalendarBlank size={12} /> {formatDate(day.date)}
                       </span>
                       <div className="flex items-center gap-1.5 text-sm font-black text-gray-800">
-                        <span className="text-red-500">{day.maxTemp}°</span>
+                        <span className="text-red-500">{Math.round(day.maxTemp)}°</span>
                         <span className="text-gray-300 font-normal">|</span>
-                        <span className="text-blue-500">{day.minTemp}°</span>
+                        <span className="text-blue-500">{Math.round(day.minTemp)}°</span>
                       </div>
                     </div>
                   ))}
